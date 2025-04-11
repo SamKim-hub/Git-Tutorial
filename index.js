@@ -1,34 +1,64 @@
-const express = require("express");
-var cors = require("cors");
-const app = express();
+var express = require("express");
+var app = express();
 
-app.use(cors());
-
-app.get("/", function (req, res) {
-  res.send("Hello World");
+const { Sequelize, DataTypes } = require("sequelize");
+const sequelize = new Sequelize({
+  dialect: "sqlite",
+  storage: "database.sqlite",
 });
 
-app.get("/user/:id", function (req, res) {
-  // const q = req.params;
-  // console.log(q);
-  // res.send(`user id: ${q.id}`);
-  const q = req.query;
-  console.log(q);
-  res.json({ "user id": q.name });
-});
-
-app.get("/sound/:name", function (req, res) {
-  const name = req.params.name;
-  if (name === "dog") {
-    res.json({ sound: "멍멍" });
-  } else if (name === "cat") {
-    res.json({ sound: "야옹" });
-  } else {
-    res.json({ sound: "알 수 없음" });
+const User = sequelize.define(
+  "User",
+  {
+    // Model attributes are defined here
+    firstName: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    lastName: {
+      type: DataTypes.STRING,
+      // allowNull defaults to true
+    },
+  },
+  {
+    // Other model options go here
   }
+);
+
+// `sequelize.define` also returns the model
+console.log(User === sequelize.models.User); // true
+// set the view engine to ejs
+app.set("view engine", "ejs");
+
+// use res.render to load up an ejs view file
+
+app.use(express.json()); // for parsing application/json
+app.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
+
+// index page
+app.get("/", function (req, res) {
+  res.render("index", { comments: comments });
 });
-app.get("/cat", function (req, res) {
-  res.json({ sound: "야옹" });
+
+// app.get("/create", function (req, res) {
+//   console.log(req.query);
+
+//   res.send("hi");
+// });
+
+app.post("/create", function (req, res) {
+  console.log(req.body);
+  const { content } = req.body;
+  comments.push(content);
+  console.log(comments);
+
+  res.redirect("/");
 });
+
+// about page
+// app.get('/about', function(req, res) {
+//   res.render('about');
+// });
 
 app.listen(3000);
+console.log("Server is listening on port 3000");
